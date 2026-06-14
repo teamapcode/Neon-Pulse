@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Neon Pulse | Synthwave Arcade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #0a0f1e, #03050a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Orbitron', monospace;
+            padding: 30px 20px 120px 20px;
+        }
+        .game-wrapper { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            width: 100%;
+            max-width: 1000px;
+        }
+        .game-title {
+            font-size: 2.6rem;
+            letter-spacing: 6px;
+            background: linear-gradient(135deg, #0ff, #f0f);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .start-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(5,10,20,0.95);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+        .start-card {
+            background: rgba(0,0,0,0.8);
+            border: 3px solid cyan;
+            border-radius: 50px;
+            padding: 40px 50px;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 20px cyan; border-color: cyan; }
+            50% { box-shadow: 0 0 60px #f0f; border-color: #f0f; }
+            100% { box-shadow: 0 0 20px cyan; border-color: cyan; }
+        }
+        .start-card h2 { font-size: 2.8rem; color: #0ff; margin-bottom: 25px; }
+        .best-record-box {
+            background: rgba(0,255,255,0.15);
+            border: 2px solid cyan;
+            border-radius: 40px;
+            padding: 12px 25px;
+            margin: 20px 0;
+        }
+        .best-record-box span:first-child { color: #ff66cc; font-size: 1.1rem; }
+        .best-display { color: #0ff; font-size: 2.2rem; font-weight: bold; margin-left: 12px; }
+        .start-btn {
+            background: linear-gradient(135deg, #0ff, #f0f);
+            border: none;
+            color: black;
+            font-family: monospace;
+            font-size: 1.4rem;
+            font-weight: bold;
+            padding: 12px 40px;
+            border-radius: 60px;
+            cursor: pointer;
+            margin: 20px 0;
+        }
+        .start-btn:hover { transform: scale(1.05); }
+        .instructions { color: #aaa; font-size: 0.75rem; margin-top: 20px; }
+        .game-container {
+            padding: 20px;
+            border-radius: 48px;
+            background: rgba(0,0,0,0.4);
+            display: none;
+        }
+        canvas {
+            display: block;
+            border-radius: 24px;
+            box-shadow: 0 0 30px cyan;
+            cursor: pointer;
+            width: 100%;
+            height: auto;
+        }
+        .info-panel {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+        .score-box, .best-box, .combo-box, .difficulty-box {
+            background: rgba(0,0,0,0.7);
+            padding: 5px 14px;
+            border-radius: 60px;
+            border-left: 3px solid cyan;
+            border-right: 3px solid cyan;
+        }
+        .score-box span, .best-box span, .combo-box span, .difficulty-box span {
+            color: #ff66cc;
+            font-size: 0.7rem;
+        }
+        .score-value, .best-value, .combo-value, .diff-value {
+            color: #0ff;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-left: 6px;
+        }
+        #resetButton {
+            background: linear-gradient(135deg, #f0f, #f60);
+            border: none;
+            color: white;
+            font-family: monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 8px 24px;
+            border-radius: 60px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        #resetButton:hover { transform: scale(1.02); }
+        .controls-tip {
+            font-size: 0.6rem;
+            background: #000000aa;
+            padding: 5px 12px;
+            border-radius: 20px;
+            color: #ccc;
+            text-align: center;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+        .ap-credit {
+            position: fixed;
+            bottom: 15px;
+            right: 20px;
+            color: #0ff;
+            background: rgba(0,0,0,0.6);
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            z-index: 100;
+        }
+        @media (max-width: 700px) {
+            body { padding: 20px 15px 100px 15px; }
+            .game-title { font-size: 1.6rem; letter-spacing: 3px; }
+            .start-card { padding: 25px 20px; }
+            .start-card h2 { font-size: 1.8rem; }
+            .best-display { font-size: 1.5rem; }
+            .start-btn { font-size: 1.1rem; padding: 10px 25px; }
+            .score-value, .best-value, .combo-value { font-size: 0.9rem; }
+            #resetButton { font-size: 0.75rem; padding: 5px 14px; }
+            .info-panel { gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-wrapper">
+    <h1 class="game-title">⚡ NEON PULSE ⚡</h1>
+    
+    <div id="startScreen" class="start-screen">
+        <div class="start-card">
+            <h2>NEON DRIFT</h2>
+            <div class="best-record-box">
+                <span>🏆 BEST SCORE</span>
+                <span class="best-display" id="startBestValue">0</span>
+            </div>
+            <button id="startButton" class="start-btn">▶ START GAME</button>
+            <div class="instructions">🖱️ MOVE MOUSE or 👆 TOUCH to control<br>✨ Avoid red shapes | Collect GOLD cubes</div>
+        </div>
+    </div>
+    
+    <div id="gameContainer" class="game-container">
+        <canvas id="gameCanvas" width="900" height="600"></canvas>
+        <div class="info-panel">
+            <div class="score-box"><span>🎯 SCORE</span><span class="score-value" id="scoreValue">0</span></div>
+            <div class="best-box"><span>🏆 BEST</span><span class="best-value" id="bestValue">0</span></div>
+            <div class="combo-box"><span>⚡ COMBO</span><span class="combo-value" id="comboValue">0</span></div>
+            <div class="difficulty-box"><span>🌀 SPEED</span><span class="diff-value" id="diffValue">1.00</span></div>
+            <button id="resetButton">🔄 RESTART</button>
+        </div>
+        <div class="controls-tip">🖱️ MOVE MOUSE | 📱 TOUCH SLIDE — Collect GOLD cubes for power-ups!</div>
+    </div>
+    
+    <div class="ap-credit">AP Code</div>
+</div>
+
+<script>
+(function(){
+    // ========== عناصر ==========
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 900;
+    canvas.height = 600;
+    
+    const startScreen = document.getElementById('startScreen');
+    const gameContainer = document.getElementById('gameContainer');
+    const startBtn = document.getElementById('startButton');
+    const resetBtn = document.getElementById('resetButton');
+    const startBestSpan = document.getElementById('startBestValue');
+    const bestSpan = document.getElementById('bestValue');
+    const scoreSpan = document.getElementById('scoreValue');
+    const comboSpan = document.getElementById('comboValue');
+    const diffSpan = document.getElementById('diffValue');
+    
+    // ========== متغیرها ==========
+    let gameRunning = true;
+    let score = 0;
+    let bestScore = 0;
+    let frame = 0;
+    let gameStarted = false;
+    
+    let difficulty = 1;
+    let spawnDelay = 42;
+    let neonHue = 180;
+    const PLAYER_RADIUS = 20;
+    let player = { x: canvas.width/2, y: canvas.height - 70 };
+    let playerTrail = [];
+    let obstacles = [];
+    let powerups = [];
+    let particles = [];
+    let ripples = [];
+    
+    let combo = 0;
+    let comboTimeout = null;
+    let comboActive = false;
+    let comboTimer = 0;
+    
+    let doubleScore = 0;
+    let slowMotion = 0;
+    let shield = 0;
+    
+    let shake = 0;
+    let shakeDur = 0;
+    
+    // ========== صدا ==========
+    let audioCtx = null;
+    let audioReady = false;
+    let bgMusicInterval = null;
+    let bgMusicActive = false;
+    let gameOverSoundPlayed = false;
+    
+    function initAudio() {
+        if(!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+    
+    function enableAudio() {
+        if(!audioCtx) initAudio();
+        if(audioCtx && !audioReady) {
+            audioCtx.resume().then(() => {
+                audioReady = true;
+                if(gameRunning && gameStarted) {
+                    startBackgroundMusic();
+                }
+            }).catch(e => console.log("Audio error:", e));
+        }
+    }
+    
+    // صدای برخورد
+    function playHitSound() {
+        if(!audioReady || !audioCtx) return;
+        try {
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.value = 150;
+            gain.gain.value = 0.3;
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+            osc.stop(now + 0.2);
+        } catch(e) {}
+    }
+    
+    // صدای Game Over - "اوه اوه اوه اوه" (4 بار صدای نزولی)
+    function playGameOverSound() {
+        if(!audioReady || !audioCtx) return;
+        if(gameOverSoundPlayed) return;
+        gameOverSoundPlayed = true;
+        try {
+            const now = audioCtx.currentTime;
+            const frequencies = [400, 350, 300, 250];
+            for(let i = 0; i < frequencies.length; i++) {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = frequencies[i];
+                gain.gain.value = 0.25;
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now + i * 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.15 + 0.12);
+                osc.stop(now + i * 0.15 + 0.12);
+            }
+        } catch(e) {}
+    }
+    
+    // صدای جمع کردن امتیاز (مثل سکه)
+    function playCoinSound() {
+        if(!audioReady || !audioCtx) return;
+        try {
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = 880;
+            gain.gain.value = 0.12;
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+            osc.stop(now + 0.1);
+        } catch(e) {}
+    }
+    
+    // آهنگ پس زمینه با دیالوگ
+    function startBackgroundMusic() {
+        if(!audioReady || !audioCtx || !gameRunning) return;
+        stopBackgroundMusic();
+        bgMusicActive = true;
+        
+        let lastBeatTime = audioCtx.currentTime;
+        let beatCount = 0;
+        
+        function scheduleNextBeat() {
+            if(!bgMusicActive || !gameRunning || !audioReady) return;
+            
+            const now = audioCtx.currentTime;
+            let bpm = 95 + Math.min(85, Math.floor(score / 20));
+            bpm = Math.min(175, bpm);
+            const interval = 60 / bpm;
+            
+            let nextTime = Math.max(now, lastBeatTime + interval);
+            lastBeatTime = nextTime;
+            
+            if(beatCount % 2 === 0) {
+                try {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    let bassFreq = 75 + Math.floor(score / 300) * 8;
+                    bassFreq = Math.min(120, bassFreq);
+                    osc.frequency.value = bassFreq;
+                    gain.gain.value = 0.05;
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(nextTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, nextTime + 0.22);
+                    osc.stop(nextTime + 0.22);
+                } catch(e) {}
+            }
+            
+            if(beatCount % 4 === 2) {
+                try {
+                    const osc2 = audioCtx.createOscillator();
+                    const gain2 = audioCtx.createGain();
+                    osc2.type = 'sine';
+                    let leadFreq = 160 + Math.floor(score / 200) * 12;
+                    leadFreq = Math.min(280, leadFreq);
+                    osc2.frequency.value = leadFreq;
+                    gain2.gain.value = 0.04;
+                    osc2.connect(gain2);
+                    gain2.connect(audioCtx.destination);
+                    osc2.start(nextTime);
+                    gain2.gain.exponentialRampToValueAtTime(0.0001, nextTime + 0.18);
+                    osc2.stop(nextTime + 0.18);
+                } catch(e) {}
+            }
+            
+            beatCount++;
+            
+            let delay = (nextTime - now) * 1000;
+            if(delay < 20) delay = 50;
+            bgMusicInterval = setTimeout(() => scheduleNextBeat(), delay);
+        }
+        
+        scheduleNextBeat();
+    }
+    
+    function stopBackgroundMusic() {
+        if(bgMusicInterval) {
+            clearTimeout(bgMusicInterval);
+            bgMusicInterval = null;
+        }
+        bgMusicActive = false;
+    }
+    
+    // ========== رکورد - ذخیره در مرورگر ==========
+    function loadBest() {
+        let saved = localStorage.getItem('neonPulse_best');
+        if(saved && !isNaN(parseInt(saved))) {
+            bestScore = parseInt(saved);
+        } else {
+            bestScore = 0;
+            localStorage.setItem('neonPulse_best', '0');
+        }
+        if(bestSpan) bestSpan.innerText = bestScore;
+        if(startBestSpan) startBestSpan.innerText = bestScore;
+    }
+    
+    function saveBest() {
+        if(score > bestScore) {
+            bestScore = score;
+            localStorage.setItem('neonPulse_best', bestScore);
+            if(bestSpan) bestSpan.innerText = bestScore;
+            if(startBestSpan) startBestSpan.innerText = bestScore;
+        }
+    }
+    
+    // ========== افکت‌ها ==========
+    function addExplosion(x, y) {
+        for(let i=0; i<25; i++) {
+            let ang = Math.random() * Math.PI * 2;
+            let sp = 2 + Math.random() * 5;
+            particles.push({
+                x: x, y: y,
+                vx: Math.cos(ang) * sp,
+                vy: Math.sin(ang) * sp,
+                life: 0.8,
+                size: 3 + Math.random() * 5,
+                color: "hsl(" + (neonHue + Math.random() * 60) + ", 100%, 60%)"
+            });
+        }
+    }
+    
+    function updateParticles() {
+        for(let i=0; i<particles.length; i++) {
+            particles[i].x += particles[i].vx;
+            particles[i].y += particles[i].vy;
+            particles[i].vy += 0.2;
+            particles[i].life -= 0.03;
+            if(particles[i].life <= 0 || particles[i].y > canvas.height + 100) {
+                particles.splice(i,1);
+                i--;
+            }
+        }
+    }
+    
+    function drawParticles() {
+        for(let p of particles) {
+            ctx.globalAlpha = p.life;
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+    }
+    
+    function addRipple(x, y) {
+        ripples.push({ x: x, y: y, r: 5, life: 1 });
+    }
+    
+    function updateRipples() {
+        for(let i=0; i<ripples.length; i++) {
+            ripples[i].life -= 0.05;
+            ripples[i].r += 3;
+            if(ripples[i].life <= 0) {
+                ripples.splice(i,1);
+                i--;
+            }
+        }
+    }
+    
+    function drawRipples() {
+        for(let r of ripples) {
+            ctx.beginPath();
+            ctx.arc(r.x, r.y, r.r, 0, Math.PI*2);
+            ctx.strokeStyle = "cyan";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+    }
+    
+    function shakeScreen(intensity, dur) {
+        shake = intensity;
+        shakeDur = dur;
+    }
+    
+    // ========== کومبو ==========
+    function updateCombo(up) {
+        if(!up) {
+            combo = 0;
+            if(comboSpan) comboSpan.innerText = "0";
+            comboActive = false;
+            return;
+        }
+        combo++;
+        if(comboSpan) comboSpan.innerText = combo;
+        comboActive = true;
+        comboTimer = 30;
+        if(combo % 5 === 0) shakeScreen(4, 6);
+    }
+    
+    // ========== امتیاز ==========
+    function addScore(amt) {
+        let mul = doubleScore > 0 ? 2 : 1;
+        let final = amt * mul;
+        score += final;
+        if(scoreSpan) scoreSpan.innerText = score;
+        saveBest();
+        
+        // پخش صدای سکه
+        playCoinSound();
+        
+        neonHue = 180 + Math.floor(score / 500) * 30;
+        difficulty = Math.min(2.8, 1 + Math.log10(1 + score / 150));
+        spawnDelay = Math.max(20, Math.floor(42 / difficulty));
+        if(diffSpan) diffSpan.innerText = difficulty.toFixed(2);
+        
+        if(combo > 1) {
+            let bonus = Math.floor(final * combo * 0.1);
+            score += bonus;
+            if(scoreSpan) scoreSpan.innerText = score;
+            saveBest();
+        }
+        
+        if(audioReady && gameRunning && bgMusicActive) {
+            startBackgroundMusic();
+        }
+    }
+    
+    // ========== کلاس‌ها ==========
+    class Obstacle {
+        constructor(x, y, spd, type) {
+            this.x = x; this.y = y; this.speed = spd;
+            this.type = type;
+            this.r = 14;
+            this.scored = false;
+        }
+    }
+    
+    class PowerUp {
+        constructor(x, y) {
+            this.x = x; this.y = y;
+            this.r = 12;
+            this.type = ['double', 'slow', 'shield'][Math.floor(Math.random() * 3)];
+            this.speed = 2.2;
+        }
+    }
+    
+    // ========== اسپاون ==========
+    function spawnObstacle() {
+        let spd = 2.5 + (difficulty - 1) * 1.8;
+        if(slowMotion > 0) spd *= 0.5;
+        let type = Math.random() > 0.5 ? 'tri' : 'diamond';
+        let x = 30 + Math.random() * (canvas.width - 60);
+        obstacles.push(new Obstacle(x, -20, spd, type));
+    }
+    
+    function spawnPowerup() {
+        if(Math.random() < 0.01 && powerups.length < 2) {
+            let x = 30 + Math.random() * (canvas.width - 60);
+            powerups.push(new PowerUp(x, -20));
+        }
+    }
+    
+    // ========== برخورد ==========
+    function checkCollisions() {
+        if(!gameRunning) return;
+        
+        for(let i=0; i<obstacles.length; i++) {
+            let o = obstacles[i];
+            let dx = player.x - o.x;
+            let dy = player.y - o.y;
+            if(Math.hypot(dx, dy) < PLAYER_RADIUS + o.r) {
+                if(shield > 0) {
+                    shield = 0;
+                    addExplosion(o.x, o.y);
+                    obstacles.splice(i,1);
+                    shakeScreen(4, 5);
+                    return;
+                } else {
+                    gameRunning = false;
+                    addExplosion(player.x, player.y);
+                    shakeScreen(12, 25);
+                    playHitSound();
+                    playGameOverSound();
+                    stopBackgroundMusic();
+                    saveBest();
+                    return;
+                }
+            }
+        }
+        
+        for(let i=0; i<powerups.length; i++) {
+            let p = powerups[i];
+            if(Math.hypot(player.x - p.x, player.y - p.y) < PLAYER_RADIUS + p.r) {
+                if(p.type === 'double') doubleScore = 450;
+                if(p.type === 'slow') slowMotion = 400;
+                if(p.type === 'shield') shield = 500;
+                addExplosion(p.x, p.y);
+                powerups.splice(i,1);
+                shakeScreen(2, 3);
+                addRipple(player.x, player.y);
+            }
+        }
+        
+        if(doubleScore > 0) doubleScore--;
+        if(slowMotion > 0) slowMotion--;
+        if(shield > 0) shield--;
+    }
+    
+    // ========== بروزرسانی ==========
+    function updateGame() {
+        if(!gameRunning) return;
+        
+        if(frame % spawnDelay === 0) spawnObstacle();
+        if(frame % 40 === 0) spawnPowerup();
+        
+        for(let i=0; i<obstacles.length; i++) {
+            let o = obstacles[i];
+            let sp = o.speed;
+            if(slowMotion > 0) sp *= 0.6;
+            o.y += sp;
+            
+            if(o.y > canvas.height + 60) {
+                obstacles.splice(i,1);
+                i--;
+            } else if(!o.scored && o.y > canvas.height - 55) {
+                o.scored = true;
+                let gain = 10 + Math.floor(difficulty * 2);
+                addScore(gain);
+                updateCombo(true);
+                addRipple(o.x, o.y);
+                if(comboTimeout) clearTimeout(comboTimeout);
+                comboTimeout = setTimeout(() => updateCombo(false), 1500);
+            }
+        }
+        
+        for(let i=0; i<powerups.length; i++) {
+            powerups[i].y += powerups[i].speed;
+            if(powerups[i].y > canvas.height + 40) {
+                powerups.splice(i,1);
+                i--;
+            }
+        }
+        
+        playerTrail.unshift({x: player.x, y: player.y});
+        if(playerTrail.length > 6) playerTrail.pop();
+        
+        checkCollisions();
+    }
+    
+    // ========== طراحی ==========
+    function drawBackground() {
+        ctx.fillStyle = "#050a15";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.strokeStyle = "hsla(" + neonHue + ", 80%, 50%, 0.2)";
+        ctx.lineWidth = 1;
+        for(let i=0; i<canvas.width+40; i+=40) {
+            ctx.beginPath();
+            ctx.moveTo(i, 0);
+            ctx.lineTo(i, canvas.height);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0, i % canvas.height);
+            ctx.lineTo(canvas.width, i % canvas.height);
+            ctx.stroke();
+        }
+        
+        let grad = ctx.createLinearGradient(0, canvas.height-80, 0, canvas.height);
+        grad.addColorStop(0, "hsla(" + neonHue + ", 80%, 20%, 0.5)");
+        grad.addColorStop(1, "#050a15");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, canvas.height-80, canvas.width, 80);
+    }
+    
+    function drawTrail() {
+        for(let i=0; i<playerTrail.length; i++) {
+            ctx.globalAlpha = 0.2 * (1 - i/playerTrail.length);
+            drawHexagon(playerTrail[i].x, playerTrail[i].y, PLAYER_RADIUS-2, "hsl(" + neonHue + ", 100%, 58%)");
+        }
+        ctx.globalAlpha = 1;
+    }
+    
+    function drawHexagon(x, y, r, color) {
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = color;
+        ctx.beginPath();
+        for(let i=0; i<6; i++) {
+            let a = i * Math.PI * 2 / 6 - Math.PI/2;
+            let px = x + r * Math.cos(a);
+            let py = y + r * Math.sin(a);
+            if(i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+    }
+    
+    function drawObstacle(o) {
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = "hsl(" + neonHue + ", 100%, 58%)";
+        ctx.fillStyle = "hsl(" + (neonHue + 30) + ", 100%, 55%)";
+        ctx.beginPath();
+        if(o.type === 'tri') {
+            ctx.moveTo(o.x, o.y - o.r);
+            ctx.lineTo(o.x - o.r, o.y + o.r * 0.7);
+            ctx.lineTo(o.x + o.r, o.y + o.r * 0.7);
+        } else {
+            ctx.moveTo(o.x, o.y - o.r);
+            ctx.lineTo(o.x + o.r, o.y);
+            ctx.lineTo(o.x, o.y + o.r);
+            ctx.lineTo(o.x - o.r, o.y);
+        }
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    }
+    
+    function drawPowerups() {
+        for(let p of powerups) {
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "gold";
+            ctx.fillStyle = "gold";
+            ctx.fillRect(p.x-8, p.y-8, 16, 16);
+            ctx.fillStyle = "black";
+            ctx.font = "bold 12px monospace";
+            let txt = p.type === 'double' ? "2X" : (p.type === 'slow' ? "⏱" : "🛡");
+            ctx.fillText(txt, p.x-5, p.y+4);
+        }
+        ctx.shadowBlur = 0;
+    }
+    
+    function drawCombo() {
+        if(comboActive && combo > 1) {
+            let sz = Math.min(50, 30 + combo);
+            ctx.font = "bold " + sz + "px 'Orbitron'";
+            ctx.fillStyle = "hsl(" + (frame * 8 % 360) + ", 100%, 60%)";
+            ctx.shadowBlur = 15;
+            ctx.fillText("x" + combo, canvas.width/2 - 40, canvas.height/3);
+            ctx.shadowBlur = 0;
+            comboTimer--;
+            if(comboTimer <= 0) comboActive = false;
+        }
+    }
+    
+    function drawIcons() {
+        if(doubleScore > 0) {
+            ctx.fillStyle = "#ffaa44";
+            ctx.beginPath();
+            ctx.arc(canvas.width-50, 50, 18, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = "black";
+            ctx.font = "bold 14px monospace";
+            ctx.fillText("2X", canvas.width-55, 55);
+        }
+        if(slowMotion > 0) {
+            ctx.fillStyle = "#44aaff";
+            ctx.beginPath();
+            ctx.arc(canvas.width-95, 50, 18, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = "black";
+            ctx.fillText("⏱", canvas.width-100, 55);
+        }
+        if(shield > 0) {
+            ctx.fillStyle = "#66ff66";
+            ctx.beginPath();
+            ctx.arc(canvas.width-140, 50, 18, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = "black";
+            ctx.fillText("🛡", canvas.width-145, 55);
+        }
+    }
+    
+    function draw() {
+        ctx.save();
+        
+        if(shakeDur > 0) {
+            ctx.translate(Math.sin(frame * 0.7) * shake, Math.cos(frame * 1.2) * shake * 0.6);
+            shakeDur--;
+            if(shakeDur <= 0) shake = 0;
+        }
+        
+        drawBackground();
+        drawTrail();
+        for(let o of obstacles) drawObstacle(o);
+        drawPowerups();
+        drawHexagon(player.x, player.y, PLAYER_RADIUS, "hsl(" + neonHue + ", 100%, 58%)");
+        drawParticles();
+        drawRipples();
+        drawCombo();
+        drawIcons();
+        
+        if(!gameRunning) {
+            ctx.font = "bold 38px 'Orbitron'";
+            ctx.fillStyle = "hsl(" + neonHue + ", 100%, 60%)";
+            ctx.fillText("GAME OVER", canvas.width/2-135, canvas.height/2-40);
+            ctx.font = "18px 'Orbitron'";
+            ctx.fillStyle = "#0ff";
+            ctx.fillText("PRESS RESTART", canvas.width/2-95, canvas.height/2+30);
+        }
+        
+        ctx.restore();
+    }
+    
+    // ========== کنترل ==========
+    function handleMove(cx, cy) {
+        if(!gameRunning) return;
+        const rect = canvas.getBoundingClientRect();
+        let x = (cx - rect.left) * (canvas.width / rect.width);
+        let y = (cy - rect.top) * (canvas.height / rect.height);
+        player.x = Math.min(canvas.width - PLAYER_RADIUS - 5, Math.max(PLAYER_RADIUS + 5, x));
+        player.y = Math.min(canvas.height - 25, Math.max(canvas.height - 130, y));
+    }
+    
+    canvas.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if(e.touches[0]) handleMove(e.touches[0].clientX, e.touches[0].clientY); });
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); if(gameStarted) enableAudio(); });
+    canvas.addEventListener('click', () => { if(gameStarted) enableAudio(); });
+    
+    // ========== ریستارت ==========
+    function resetGame() {
+        gameRunning = true;
+        score = 0;
+        combo = 0;
+        frame = 0;
+        obstacles = [];
+        powerups = [];
+        particles = [];
+        ripples = [];
+        playerTrail = [];
+        doubleScore = 0;
+        slowMotion = 0;
+        shield = 0;
+        shake = 0;
+        shakeDur = 0;
+        player.x = canvas.width/2;
+        player.y = canvas.height - 70;
+        difficulty = 1;
+        spawnDelay = 42;
+        neonHue = 180;
+        gameOverSoundPlayed = false;  // ریست صدای Game Over
+        
+        if(comboTimeout) clearTimeout(comboTimeout);
+        comboActive = false;
+        
+        if(scoreSpan) scoreSpan.innerText = "0";
+        if(comboSpan) comboSpan.innerText = "0";
+        if(diffSpan) diffSpan.innerText = "1.00";
+        
+        saveBest();
+        
+        if(audioReady) {
+            stopBackgroundMusic();
+            startBackgroundMusic();
+        }
+    }
+    
+    // ========== شروع بازی ==========
+    function startGame() {
+        gameStarted = true;
+        startScreen.style.display = 'none';
+        gameContainer.style.display = 'block';
+        resetGame();
+        enableAudio();
+    }
+    
+    startBtn.addEventListener('click', startGame);
+    resetBtn.addEventListener('click', () => {
+        if(gameStarted) {
+            resetGame();
+        }
+    });
+    
+    // ========== انیمیشن ==========
+    function animate() {
+        if(gameStarted) {
+            updateGame();
+            updateParticles();
+            updateRipples();
+            draw();
+            frame++;
+        }
+        requestAnimationFrame(animate);
+    }
+    
+    loadBest();
+    initAudio();
+    animate();
+})();
+</script>
+</body>
+</html>
