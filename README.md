@@ -1,91 +1,87 @@
 ## ⚡ NEON PULSE ⚡
 
-**یک بازی آرکید سینت‌ویو با افکت‌های نئونی، سیستم کومبو، پاورآپ و موسیقی پویا**
+**A synthwave arcade game with neon effects, combo system, power-ups, and dynamic music**
 
 ---
 
-### 🎮 درباره بازی
+### 🎮 About The Game
 
-NEON PULSE یک بازی آرکید سریع و اعصاب‌خردکن با تم سینت‌ویو و افکت‌های نئونی است. شما کنترل یک هگزagon درخشان را به دست می‌گیرید و باید از موانع هندسی فرار کنید، پاورآپ‌های طلایی جمع کنید و رکورد خود را بشکنید!
+NEON PULSE is a fast-paced arcade game with a synthwave theme and neon visual effects. You control a glowing hexagon, dodging geometric obstacles, collecting golden power-ups, and breaking your own high score.
 
----
-
-### ✨ ویژگی‌های اصلی
-
-| ویژگی | توضیح |
-|-------|-------|
-| 🎨 افکت نئونی پویا | رنگ بازی با هر ۵۰۰ امتیاز تغییر می‌کند |
-| 💥 لرزش دوربین | برخورد با موانع همراه با لرزش |
-| 🧨 سیستم ذرات انفجاری | هنگام Game Over و برخوردها |
-| 💾 ذخیره رکورد | بهترین امتیاز در مرورگر ذخیره می‌شود |
-| 📈 دیفیكالتی لگاریتمی | سرعت و دشواری به مرور زمان افزایش می‌یابد |
-| ⚡ سیستم کومبو | عبور متوالی از موانع = امتیاز تصاعدی |
-| 🛡️ پاورآپ‌ها | 2X امتیاز، کند کردن زمان، سپر محافظ |
-| 🎵 موسیقی سینت‌ویو پویا | BPM و فرکانس با افزایش امتیاز بالاتر می‌رود |
-| 🔊 صداهای تعاملی | صدای سکه، صدای برخورد، صدای Game Over |
+The game becomes harder over time using a logarithmic difficulty curve. The music tempo increases as your score gets higher, and the neon colors shift every 500 points.
 
 ---
 
-### 🎯 کنترل‌ها
+### ✨ Features
 
-| ورودی | عملکرد |
+| Feature | Description |
+|---------|-------------|
+| 🎨 Dynamic Neon Theme | Color shifts every 500 points |
+| 💥 Screen Shake | Sinusoidal shake on collision |
+| 🧨 Particle Explosions | Visual feedback on hits and Game Over |
+| 💾 Local Storage | Best score saved in your browser |
+| 📈 Logarithmic Difficulty | Speed increases smoothly over time |
+| ⚡ Combo System | Consecutive dodges = bonus points |
+| 🛡️ Power-ups | 2X Score, Slow Motion, Shield |
+| 🎵 Dynamic Synthwave Music | BPM and pitch rise with your score |
+| 🔊 Interactive Sounds | Coin sound, collision sound, Game Over sound |
+
+---
+
+### 🎮 Controls
+
+| Input | Action |
 |-------|--------|
-| 🖱️ حرکت ماوس | حرکت هگزagon به چپ و راست |
-| 👆 لمس (موبایل) | کشیدن انگشت روی صفحه |
+| 🖱️ Mouse Move | Move hexagon left and right |
+| 👆 Touch (Mobile) | Drag your finger on the screen |
 
 ---
 
-### 🎮 پاورآپ‌ها
+### 🧪 Power-ups
 
-| نماد | نام | توضیح |
-|------|-----|-------|
-| 🟡 2X | Double Score | امتیاز دریافتی را دو برابر می‌کند |
-| 🔵 ⏱ | Slow Motion | سرعت موانع را کاهش می‌دهد |
-| 🟢 🛡 | Shield | یک بار برخورد را جذب می‌کند |
-
----
-
-### 🚀 نصب و اجرا
-
-**روش اول - اجرای مستقیم:**
-
-فایل index.html را در مرورگر باز کنید.
-
-**روش دوم - اجرای آنلاین با GitHub Pages:**
-
-بعد از آپلود، بازی در آدرس زیر در دسترس است:
-https://USERNAME.github.io/neon-pulse/
+| Icon | Name | Effect |
+|------|------|--------|
+| 🟡 2X | Double Score | Doubles score gain for a short time |
+| 🔵 ⏱ | Slow Motion | Reduces obstacle speed |
+| 🟢 🛡 | Shield | Absorbs one collision |
 
 ---
 
-### 📁 ساختار پروژه
+### 🚀 Installation
 
-| فایل | توضیح |
-|------|-------|
-| 📄 index.html | ساختار اصلی بازی |
-| 🎨 style.css | استایل‌ها و افکت‌های نئونی |
-| ⚙️ game.js | منطق کامل بازی |
+**Method 1 - Direct Execution:**
 
----
+Open the index.html file in your browser.
 
-### 📝 لایسنس
+**Method 2 - Online with GitHub Pages:**
 
-MIT License - آزاد برای استفاده، کپی، تغییر و توزیع.
+After uploading, the game will be available at:
+https://YOUR_USERNAME.github.io/neon-pulse/
 
 ---
 
-### 👨‍💻 سازنده
+### 📁 Project Structure
 
-**AP Code** 🤘
-
----
-
-<p align="center">
-  <i>"عجب چیز باحاله، دم سازنده اش گرم!"</i> 😎
-</p>
+| File | Description |
+|------|-------------|
+| 📄 index.html | Main game structure |
+| 🎨 style.css | Neon styles and visual effects |
+| ⚙️ game.js | Complete game logic |
 
 ---
 
-<p align="center">
-  ⚡ SYNTHWAVE ARCADE GAME ⚡
-</p>
+### 📜 License
+
+This project is released under the MIT License. You are free to use, copy, modify, and distribute it.
+
+---
+
+### 👨‍💻 Created By
+
+AP Code 🤘
+
+---
+
+😎 "Whoa, this is awesome! Props to the developer!"
+
+ SYNTHWAVE ARCADE GAME ⚡
